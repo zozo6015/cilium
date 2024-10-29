@@ -306,7 +306,7 @@ jobs:
           key-algo: ${{ matrix.key-two }}
           key-type-one: ${{ matrix.key-type-one }}
           key-type-two: ${{ matrix.key-type-two }}
-          encryption-overlay: ${{ matrix.encryption-overlay }}
+          tunnel: ${{ matrix.tunnel }}
 
       - name: Assert that no unencrypted packets are leaked during key rotation
         uses: ./.github/actions/bpftrace/check
