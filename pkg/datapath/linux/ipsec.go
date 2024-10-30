@@ -341,7 +341,7 @@ func (n *linuxNodeHandler) enableIPSecIPv4Do(newNode *nodeTypes.Node, nodeID uin
 	remoteOverlayIPExactMatch := &net.IPNet{IP: remoteUnderlayIP, Mask: exactMatchMask}
 
 	params = ipsec.NewIPSecParamaters(template)
-	params.ReqID = ipsec.EncryptedOverlayReqID
+	params.ReqID = ipsec.DefaultReqID
 	params.Dir = ipsec.IPSecDirOut
 	params.SourceSubnet = localOverlayIPExactMatch
 	params.DestSubnet = remoteOverlayIPExactMatch
@@ -354,7 +354,7 @@ func (n *linuxNodeHandler) enableIPSecIPv4Do(newNode *nodeTypes.Node, nodeID uin
 	}
 
 	params = ipsec.NewIPSecParamaters(template)
-	params.ReqID = ipsec.EncryptedOverlayReqID
+	params.ReqID = ipsec.DefaultReqID
 	params.Dir = ipsec.IPSecDirIn
 	params.SourceSubnet = remoteOverlayIPExactMatch
 	params.DestSubnet = localOverlayIPExactMatch
@@ -388,7 +388,7 @@ func (n *linuxNodeHandler) enableIPSecIPv4Do(newNode *nodeTypes.Node, nodeID uin
 	// 	  same policy which fixes the above can be set to optional to allow
 	// 	  matching traffic with mark set to zero to not be enforced.
 	params = ipsec.NewIPSecParamaters(template)
-	params.ReqID = ipsec.EncryptedOverlayReqID
+	params.ReqID = ipsec.DefaultReqID
 	params.Dir = ipsec.IPSecDirIn
 	params.SourceSubnet = remoteOverlayIPExactMatch
 	params.DestSubnet = localOverlayIPExactMatch
@@ -403,7 +403,7 @@ func (n *linuxNodeHandler) enableIPSecIPv4Do(newNode *nodeTypes.Node, nodeID uin
 	}
 
 	params = ipsec.NewIPSecParamaters(template)
-	params.ReqID = ipsec.EncryptedOverlayReqID
+	params.ReqID = ipsec.DefaultReqID
 	params.Dir = ipsec.IPSecDirFwd
 	params.SourceSubnet = wildcardCIDR
 	params.DestSubnet = localOverlayIPExactMatch
