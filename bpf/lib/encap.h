@@ -104,8 +104,9 @@ __encap_and_redirect_lxc(struct __ctx_buff *ctx, __be32 tunnel_endpoint,
 					 seclabel, false, false);
 #endif
 
-	return encap_and_redirect_with_nodeid(ctx, tunnel_endpoint, 0, seclabel,
-					      dstid, trace);
+	return __encap_and_redirect_with_nodeid(ctx, tunnel_endpoint,
+						seclabel, dstid, NOT_VTEP_DST,
+						trace);
 }
 
 #if defined(TUNNEL_MODE)
@@ -147,8 +148,8 @@ encap_and_redirect_lxc(struct __ctx_buff *ctx,
 					 seclabel, false, false);
 	}
 # endif
-	return encap_and_redirect_with_nodeid(ctx, tunnel->ip4, 0, seclabel, dstid,
-					      trace);
+	return __encap_and_redirect_with_nodeid(ctx, tunnel->ip4, seclabel,
+						dstid, NOT_VTEP_DST, trace);
 }
 
 static __always_inline int
@@ -168,8 +169,8 @@ encap_and_redirect_netdev(struct __ctx_buff *ctx, struct tunnel_key *k,
 					 seclabel, true, false);
 #endif
 
-	return encap_and_redirect_with_nodeid(ctx, tunnel->ip4, 0, seclabel, 0,
-					      trace);
+	return __encap_and_redirect_with_nodeid(ctx, tunnel->ip4, seclabel,
+						0, NOT_VTEP_DST, trace);
 }
 #endif /* TUNNEL_MODE */
 
