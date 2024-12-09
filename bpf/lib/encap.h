@@ -27,7 +27,7 @@ struct {
 static __always_inline int
 __encap_with_nodeid(struct __ctx_buff *ctx, __u32 src_ip, __be16 src_port,
 		    __be32 tunnel_endpoint,
-		    __u32 seclabel, __u32 dstid, __u32 vni __maybe_unused,
+		    __u32 seclabel, __u32 dstid, __u32 vni,
 		    enum trace_reason ct_reason, __u32 monitor, int *ifindex)
 {
 	__u32 node_id;
@@ -57,7 +57,7 @@ __encap_with_nodeid(struct __ctx_buff *ctx, __u32 src_ip, __be16 src_port,
 }
 
 static __always_inline int
-__encap_and_redirect_with_nodeid(struct __ctx_buff *ctx, __u32 src_ip __maybe_unused,
+__encap_and_redirect_with_nodeid(struct __ctx_buff *ctx, __u32 src_ip,
 				 __be32 tunnel_endpoint,
 				 __u32 seclabel, __u32 dstid, __u32 vni,
 				 const struct trace_ctx *trace)
@@ -104,9 +104,6 @@ __encap_and_redirect_lxc(struct __ctx_buff *ctx, __be32 tunnel_endpoint,
 			 __u8 encrypt_key __maybe_unused, __u32 seclabel,
 			 __u32 dstid, const struct trace_ctx *trace)
 {
-	int ifindex __maybe_unused;
-	int ret __maybe_unused;
-
 #ifdef ENABLE_IPSEC
 	if (encrypt_key)
 		return set_ipsec_encrypt(ctx, encrypt_key, tunnel_endpoint,
