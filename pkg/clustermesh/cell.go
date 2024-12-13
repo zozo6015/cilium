@@ -5,6 +5,7 @@ package clustermesh
 
 import (
 	"github.com/cilium/hive/cell"
+	"github.com/spf13/pflag"
 
 	"github.com/cilium/cilium/daemon/cmd/cni"
 	"github.com/cilium/cilium/pkg/clustermesh/common"
@@ -18,6 +19,24 @@ import (
 	nodeStore "github.com/cilium/cilium/pkg/node/store"
 	"github.com/cilium/cilium/pkg/option"
 )
+
+type ClustermeshConfig struct {
+	// AllowBuggyClustermesh determines whether to hard-fail startup due
+	// to detection of a configuration combination that may trigger
+	// connection impact in the dataplane due to clustermesh IDs
+	// conflicting with other usage of skb->mark field. See GH-21330.
+	AllowBuggyClustermesh bool
+}
+
+func (cfg ClustermeshConfig) Flags(flags *pflag.FlagSet) {
+	flags.Bool("allow-buggy-clustermesh", false,
+		"Allow the daemon to continue to operate even if conflicting clustermesh ID configuration is detected")
+	flags.MarkHidden("allow-buggy-clustermesh")
+}
+
+var defaultConfig = ClustermeshConfig{
+	AllowBuggyClustermesh: false,
+}
 
 var Cell = cell.Module(
 	"clustermesh",
@@ -35,12 +54,18 @@ var Cell = cell.Module(
 
 	cell.Config(common.DefaultConfig),
 	cell.Config(wait.TimeoutConfigDefault),
+	cell.Config(defaultConfig),
 
 	metrics.Metric(NewMetrics),
 	metrics.Metric(common.MetricsProvider(subsystem)),
 
-	cell.Invoke(func(info types.ClusterInfo, dcfg *option.DaemonConfig, cnimgr cni.CNIConfigManager) error {
-		return info.ValidateBuggyClusterID(dcfg.IPAM, cnimgr.GetChainingMode())
+	cell.Invoke(func(info types.ClusterInfo, dcfg *option.DaemonConfig, cnimgr cni.CNIConfigManager, cfg Configuration) error {
+		err := info.ValidateBuggyClusterID(dcfg.IPAM, cnimgr.GetChainingMode())
+		if err != nil && cfg.ClustermeshConfig.AllowBuggyClustermesh {
+			cfg.Logger.WithError(err).Error("Detected clustermesh ID configuration that may cause connection impact")
+			return nil
+		}
+		return err
 	}),
 	cell.Invoke(ipsetNotifier),
 	cell.Invoke(nodeManagerNotifier),

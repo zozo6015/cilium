@@ -39,6 +39,7 @@ type Configuration struct {
 
 	common.Config
 	wait.TimeoutConfig
+	ClustermeshConfig
 
 	// ClusterInfo is the id/name of the local cluster. This is used for logging and metrics
 	ClusterInfo cmtypes.ClusterInfo
