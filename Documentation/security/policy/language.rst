@@ -214,6 +214,19 @@ The purpose of this rule is to allow establishing base requirements such as, any
 endpoint in ``env=prod`` can only be accessed if the source endpoint also carries
 the label ``env=prod``.
 
+.. warning::
+
+   ``toRequires`` and ``fromRequires`` always apply fully to all rules that share the same
+   endpoint selector. An important implication of the fact that ``toRequires`` and ``fromRequires``
+   limit all ingress and egress traffic that applies to an endpoint selector is
+   that the other egress and ingress rules (such as ``fromEndpoints``, ``fromPorts``,
+   ``toEntities``, ``toServices``, and the rest) do not limit the scope of the
+   ``toRequires`` of ``fromRequires`` fields. Pairing other ingress and egress
+   rules with a ``toRequires`` or ``fromRequires`` will result in valid policy
+   changes, but the ``toRequires`` and ``fromRequires`` field will not be affected
+   or limited by the presence of the other rules.
+
+
 This example shows how to require every endpoint with the label ``env=prod`` to
 be only accessible if the source endpoint also has the label ``env=prod``.
 
