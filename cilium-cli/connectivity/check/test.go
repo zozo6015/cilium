@@ -841,6 +841,11 @@ func (t *Test) ForEachIPFamily(do func(features.IPFamily)) {
 			}
 
 		case features.IPFamilyV6:
+			ipsec, _ := t.Context().Features.MatchRequirements(features.RequireMode(features.EncryptionPod, "ipsec"))
+			if ipsec && versioncheck.MustCompile("<1.14.0")(t.Context().CiliumVersion) {
+				t.Logf("Skipping IPv6 test for IPsec as it requires Cilium version >=1.14.0, current version %s", t.Context().CiliumVersion)
+				continue
+			}
 			if f, ok := t.ctx.Features[features.IPv6]; ok && f.Enabled {
 				do(ipFam)
 			}
