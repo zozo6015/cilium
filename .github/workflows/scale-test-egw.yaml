@@ -30,10 +30,10 @@ on:
         default: 20
         type: number
 
-# For testing uncomment following lines:
-#  push:
-#    branches:
-#      - your_branch_name
+  # For testing uncomment following lines:
+  push:
+    branches:
+      - pr/learnitall/init-egw-scale-test
 
 permissions:
   # To be able to access the repository with actions/checkout
@@ -130,6 +130,7 @@ jobs:
           else
             SHA="${{ github.sha }}"
           fi
+          SHA="0c8e9ffd4214f1c2c1ccd3b0e19ea935d1dfbb52"
 
           # The SHA under test will have its helm chart checked out at the following
           # path right before the step where Cilium is installed.
