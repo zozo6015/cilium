@@ -1240,6 +1240,7 @@ int cil_from_netdev(struct __ctx_buff *ctx)
 {
 	__u32 src_id = UNKNOWN_ID;
 	__be16 proto = 0;
+	__s8 ext_err = 0;
 
 #ifdef ENABLE_NODEPORT_ACCELERATION
 	__u32 flags = ctx_get_xfer(ctx, XFER_FLAGS);
@@ -1308,10 +1309,22 @@ int cil_from_netdev(struct __ctx_buff *ctx)
 		return CTX_ACT_OK;
 #endif
 
-	return do_netdev(ctx, proto, UNKNOWN_ID, TRACE_FROM_NETWORK, false);
+	ret = tail_call_internal(ctx, CILIUM_CALL_DO_NETDEV_INGRESS, &ext_err);
+	return send_drop_notify_error_ext(ctx, src_id, ret, ext_err,
+								   CTX_ACT_DROP, METRIC_INGRESS);
 
 drop_err:
 	return send_drop_notify_error(ctx, src_id, ret, CTX_ACT_DROP, METRIC_INGRESS);
+}
+
+__section_tail(CILIUM_MAP_CALLS, CILIUM_CALL_DO_NETDEV_INGRESS)
+int tail_handle_do_netdev_ingress(struct __ctx_buff *ctx)
+{
+	__be16 proto = 0;
+
+	validate_ethertype(ctx, &proto);
+
+	return do_netdev(ctx, proto, UNKNOWN_ID, TRACE_FROM_NETWORK, false);
 }
 
 /*
