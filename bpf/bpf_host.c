@@ -1334,11 +1334,11 @@ int tail_handle_do_netdev_ingress(struct __ctx_buff *ctx)
 __section_entry
 int cil_from_host(struct __ctx_buff *ctx)
 {
-	enum trace_point obs_point = TRACE_FROM_HOST;
-	__u32 identity = UNKNOWN_ID;
+	__u32 identity __maybe_unused = UNKNOWN_ID;
 	int ret __maybe_unused;
-	__be16 proto = 0;
-	__u32 magic;
+	__be16 proto __maybe_unused = 0;
+	__u32 magic __maybe_unused;
+	__s8 ext_err = 0;
 
 	/* Traffic from the host ns going through cilium_host device must
 	 * not be subject to EDT rate-limiting.
@@ -1363,8 +1363,6 @@ int cil_from_host(struct __ctx_buff *ctx)
 	}
 
 	magic = inherit_identity_from_host(ctx, &identity);
-	if (magic == MARK_MAGIC_PROXY_INGRESS ||  magic == MARK_MAGIC_PROXY_EGRESS)
-		obs_point = TRACE_FROM_PROXY;
 
 #if defined(ENABLE_L7_LB)
 	if (magic == MARK_MAGIC_PROXY_EGRESS_EPID) {
@@ -1392,6 +1390,25 @@ int cil_from_host(struct __ctx_buff *ctx)
 		return ret;
 	}
 #endif /* ENABLE_IPSEC */
+
+	ret = tail_call_internal(ctx, CILIUM_CALL_DO_NETDEV_EGRESS, &ext_err);
+	return send_drop_notify_error_ext(ctx, HOST_ID, ret, ext_err,
+								   CTX_ACT_DROP, METRIC_EGRESS);
+}
+
+__section_tail(CILIUM_MAP_CALLS, CILIUM_CALL_DO_NETDEV_EGRESS)
+int tail_handle_do_netdev_egress(struct __ctx_buff *ctx)
+{
+	enum trace_point obs_point = TRACE_FROM_HOST;
+	__u32 identity = UNKNOWN_ID;
+	__be16 proto = 0;
+	__u32 magic;
+
+	validate_ethertype(ctx, &proto);
+
+	magic = inherit_identity_from_host(ctx, &identity);
+	if (magic == MARK_MAGIC_PROXY_INGRESS ||  magic == MARK_MAGIC_PROXY_EGRESS)
+		obs_point = TRACE_FROM_PROXY;
 
 	return do_netdev(ctx, proto, identity, obs_point, true);
 }
